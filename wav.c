@@ -7,8 +7,12 @@
 #include <errno.h>
 #include <assert.h>
 
-#define _unused_ __attribute__((unsused))
-#define _packed_ __attribute__((packed))
+#define _unused_           __attribute__((unsused))
+#define _packed_           __attribute__((packed))
+#define _cleanup_(x)       __attribute__((cleanup(x)))
+#define _cleanup_fclose_   _cleanup_(fclosep)
+
+static inline void fclosep(FILE **fp) { if (*fp) fclose(*fp); }
 
 static inline bool strneq(const char *s1, const char *s2, size_t n) { return strncmp(s1, s2, n) == 0; }
 static inline bool ck_magic(const char *s1, const char *s2) { return strneq(s1, s2, 4); }
@@ -64,7 +68,7 @@ typedef struct wave {
 static void dump_toc(const wave_t *wave)
 {
     const struct wave_toc *entry;
-    FILE *tty = fopen("/dev/tty", "w");
+    _cleanup_fclose_ FILE *tty = fopen("/dev/tty", "w");
 
     fprintf(tty, ">> DUMPING TOC\n");
     for (entry = wave->toc; entry; entry = entry->next)
@@ -73,8 +77,6 @@ static void dump_toc(const wave_t *wave)
                entry->id[1],
                entry->id[2],
                entry->id[3]);
-
-    fclose(tty);
 }
 /* }}} */
 
@@ -174,14 +176,13 @@ int main(void)
         return 1;
     }
 
-    FILE *tty = fopen("/dev/tty", "w");
+    _cleanup_fclose_ FILE *tty = fopen("/dev/tty", "w");
     fprintf(tty, "format: %d\n", wave.fmt.format);
     fprintf(tty, "channels: %d\n", wave.fmt.channels);
     fprintf(tty, "sample_rate: %d\n", wave.fmt.sample_rate);
     fprintf(tty, "bytes_per_second: %d\n", wave.fmt.bytes_per_second);
     fprintf(tty, "block_align: %d\n", wave.fmt.block_align);
     fprintf(tty, "bits_per_sample: %d\n", wave.fmt.bits_per_sample);
-    fclose(tty);
 
     ssize_t len = load_pcm_data(&wave);
     for (ssize_t i = 0; i < len; i += BUFSIZ) {
