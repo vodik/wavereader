@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
+#include <err.h>
 #include <assert.h>
 
 #define _unused_           __attribute__((unsused))
@@ -141,10 +142,8 @@ static int wave_open(wave_t *wave, const char *filename)
 {
     FILE *fp = fopen(filename, "r+");
 
-    if (read_riff_header(fp) < 0) {
-        fprintf(stderr, "not a valid header");
-        return -1;
-    }
+    if (read_riff_header(fp) < 0)
+        err(1, "not a valid header");
 
     *wave = (wave_t){ .fp = fp, };
 
@@ -173,15 +172,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    if (wave_open(&wave, argv[1]) < 0) {
-        printf("failed to open wave\n");
-        return 1;
-    }
+    if (wave_open(&wave, argv[1]) < 0)
+        err(1, "failed to open wave\n");
 
-    if (wave.fmt.format != WAVE_FORMAT_PCM) {
-        fprintf(stderr, "Only PCM waves are supported\n");
-        return 1;
-    }
+    if (wave.fmt.format != WAVE_FORMAT_PCM)
+        errx(1, "Only PCM waves are supported\n");
 
     _cleanup_fclose_ FILE *tty = fopen("/dev/tty", "w");
     fprintf(tty, "format: %d\n", wave.fmt.format);
