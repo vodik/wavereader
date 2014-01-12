@@ -164,12 +164,19 @@ static ssize_t load_pcm_data(const wave_t *wave)
     return hdr.length;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     wave_t wave;
 
-    if (wave_open(&wave, "wave.wav") < 0)
+    if (argc != 2) {
+        fprintf(stderr, "usage: wav [file]\n");
+        return 1;
+    }
+
+    if (wave_open(&wave, argv[1]) < 0) {
         printf("failed to open wave\n");
+        return 1;
+    }
 
     if (wave.fmt.format != WAVE_FORMAT_PCM) {
         fprintf(stderr, "Only PCM waves are supported\n");
