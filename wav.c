@@ -85,7 +85,7 @@ static int find_header(const wave_t *wave, const char *id, struct wave_header *h
 {
     struct wave_toc *entry;
 
-    for (entry = wave->toc; !ck_magic(entry->id, id); entry = entry->next);
+    for (entry = wave->toc; entry && !ck_magic(entry->id, id); entry = entry->next);
     if (!entry)
         return -1;
 
