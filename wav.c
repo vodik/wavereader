@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
         err(1, "failed to open wave\n");
 
     if (wave.fmt.format != WAVE_FORMAT_PCM)
-        errx(1, "Only PCM waves are supported\n");
+        errx(1, "only PCM waves are supported\n");
 
     _cleanup_fclose_ FILE *tty = fopen("/dev/tty", "w");
     fprintf(tty, "format: %d\n", wave.fmt.format);
