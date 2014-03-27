@@ -45,13 +45,11 @@ int main(int argc, char *argv[])
     }
 
     if (wave_open(&wave, argv[1]) < 0)
-        err(1, "failed to open wave\n");
-
-    if (wave.fmt.format != WAVE_FORMAT_PCM)
-        errx(1, "only PCM waves are supported\n");
+        err(EXIT_FAILURE, "failed to open wave %s", argv[1]);
 
     dump_wave_fmt(&wave.fmt);
-    populate_pa_sample_spec(&ss, &wave.fmt);
+    if (populate_pa_sample_spec(&ss, &wave.fmt) < 0)
+        errx(EXIT_FAILURE, "unable to play wave file");
 
     s = pa_simple_new(NULL, argv[0], PA_STREAM_PLAYBACK, NULL, "playback", &ss, NULL, NULL, &error);
     if (!s)

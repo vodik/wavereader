@@ -1,6 +1,7 @@
 #include "wave_helper.h"
 
 #include <stdlib.h>
+#include <errno.h>
 #include <err.h>
 #include <pulse/simple.h>
 #include "wave.h"
@@ -33,16 +34,22 @@ void dump_wave_fmt(struct wave_fmt *fmt)
 }
 /* }}} */
 
-void populate_pa_sample_spec(pa_sample_spec *ss, const struct wave_fmt *fmt)
+int populate_pa_sample_spec(pa_sample_spec *ss, const struct wave_fmt *fmt)
 {
     pa_sample_format_t format;
+
+    if (fmt->format != WAVE_FORMAT_PCM) {
+        warnx("only PCM waves are supported\n");
+        return -EINVAL;
+    }
 
     switch (fmt->bits_per_sample) {
     case 8:
         format = PA_SAMPLE_U8;
         break;
     default:
-        errx(EXIT_FAILURE, "unsupported bits_per_sample");
+        warnx("unsupported bits_per_sample");
+        return -EINVAL;
     }
 
     *ss = (pa_sample_spec){
@@ -50,4 +57,6 @@ void populate_pa_sample_spec(pa_sample_spec *ss, const struct wave_fmt *fmt)
         .rate     = fmt->sample_rate,
         .channels = fmt->channels
     };
+
+    return 0;
 }
