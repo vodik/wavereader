@@ -54,4 +54,4 @@ typedef struct wave {
 } wave_t;
 
 int wave_open(wave_t *wave, const char *filename);
-ssize_t load_pcm_data(const wave_t *wave);
+ssize_t find_pcm_data(const wave_t *wave);

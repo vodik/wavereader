@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     if (!s)
         pa_err(EXIT_FAILURE, error, "pa_simple_new failed");
 
-    ssize_t len = load_pcm_data(&wave);
+    ssize_t len = find_pcm_data(&wave);
     for (ssize_t i = 0; i < len; i += BUFSIZ) {
         size_t chunk_size = (i + BUFSIZ > len) ? (len - i) : BUFSIZ;
         char buf[BUFSIZ];

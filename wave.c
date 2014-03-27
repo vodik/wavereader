@@ -85,7 +85,7 @@ int wave_open(wave_t *wave, const char *filename)
     return read_chunk(wave, "fmt ", &wave->fmt, sizeof(wave->fmt));
 }
 
-ssize_t load_pcm_data(const wave_t *wave)
+ssize_t find_pcm_data(const wave_t *wave)
 {
     struct wave_header hdr;
 
