@@ -47,7 +47,7 @@ static int read_riff_header(FILE *fp)
 
 static void build_toc(wave_t *wave)
 {
-    struct wave_toc *entry;
+    struct wave_toc *entry = wave->toc;
     struct wave_header hdr;
 
     while (1) {
