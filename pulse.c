@@ -62,14 +62,10 @@ int main(int argc, char *argv[])
         size_t chunk_size = (i + BUFSIZ > len) ? (len - i) : BUFSIZ;
         char buf[BUFSIZ];
 
-#if 0
-        pa_usec_t latency;
-        if ((latency = pa_simple_get_latency(s, &error)) == (pa_usec_t) -1) {
-            fprintf(stderr, __FILE__": pa_simple_get_latency() failed: %s\n", pa_strerror(error));
-            goto finish;
-        }
-        fprintf(stderr, "%0.0f usec \r", (float)latency);
-#endif
+        pa_usec_t latency = pa_simple_get_latency(s, &error);
+        if (latency == (pa_usec_t)-1)
+            pa_err(EXIT_FAILURE, error, "pa_simple_get_latency failed");
+        fprintf(stderr, " %0.0f usec latency  \r", (float)latency);
 
         fread(buf, 1, chunk_size, wave.fp);
         if (pa_simple_write(s, buf, chunk_size, &error) < 0)
