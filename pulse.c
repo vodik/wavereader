@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     int error;
 
     if (argc != 2) {
-        fprintf(stderr, "usage: wav [file]\n");
+        fprintf(stderr, "usage: %s [file]\n", argv[0]);
         return 1;
     }
 
