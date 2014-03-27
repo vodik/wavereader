@@ -74,10 +74,22 @@ static void dump_toc(const wave_t *wave)
     fprintf(tty, ">> DUMPING TOC\n");
     for (entry = wave->toc; entry; entry = entry->next)
         fprintf(tty, "   -> \"%c%c%c%c\" chunk found\n",
-               entry->id[0],
-               entry->id[1],
-               entry->id[2],
-               entry->id[3]);
+                entry->id[0],
+                entry->id[1],
+                entry->id[2],
+                entry->id[3]);
+}
+
+static void dump_wave_fmt(struct wave_fmt *fmt)
+{
+    _cleanup_fclose_ FILE *tty = fopen("/dev/tty", "w");
+
+    fprintf(tty, "format: %d\n", fmt->format);
+    fprintf(tty, "channels: %d\n", fmt->channels);
+    fprintf(tty, "sample_rate: %d\n", fmt->sample_rate);
+    fprintf(tty, "bytes_per_second: %d\n", fmt->bytes_per_second);
+    fprintf(tty, "block_align: %d\n", fmt->block_align);
+    fprintf(tty, "bits_per_sample: %d\n", fmt->bits_per_sample);
 }
 /* }}} */
 
@@ -87,7 +99,7 @@ static int find_header(const wave_t *wave, const char *id, struct wave_header *h
 
     for (entry = wave->toc; entry && !ck_magic(entry->id, id); entry = entry->next);
     if (!entry)
-        return -1;
+        return -EINVAL;
 
     fseek(wave->fp, entry->offset, SEEK_SET);
     return fread(hdr, sizeof(*hdr), 1, wave->fp);
@@ -98,7 +110,7 @@ static ssize_t read_chunk(const wave_t *wave, const char *id, void *dest, size_t
     struct wave_header hdr;
 
     if (find_header(wave, id, &hdr) < 0)
-        return -1;
+        return -EINVAL;
     return fread(dest, 1, len, wave->fp);
 }
 
@@ -158,7 +170,7 @@ static ssize_t load_pcm_data(const wave_t *wave)
 
     ssize_t nbytes_r = find_header(wave, "data", &hdr);
     if (nbytes_r < 0)
-        return -1;
+        return -EINVAL;
 
     return hdr.length;
 }
@@ -178,13 +190,7 @@ int main(int argc, char *argv[])
     if (wave.fmt.format != WAVE_FORMAT_PCM)
         errx(1, "only PCM waves are supported\n");
 
-    _cleanup_fclose_ FILE *tty = fopen("/dev/tty", "w");
-    fprintf(tty, "format: %d\n", wave.fmt.format);
-    fprintf(tty, "channels: %d\n", wave.fmt.channels);
-    fprintf(tty, "sample_rate: %d\n", wave.fmt.sample_rate);
-    fprintf(tty, "bytes_per_second: %d\n", wave.fmt.bytes_per_second);
-    fprintf(tty, "block_align: %d\n", wave.fmt.block_align);
-    fprintf(tty, "bits_per_sample: %d\n", wave.fmt.bits_per_sample);
+    dump_wave_fmt(&wave.fmt);
 
     ssize_t len = load_pcm_data(&wave);
     for (ssize_t i = 0; i < len; i += BUFSIZ) {
